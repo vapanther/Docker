@@ -1,0 +1,247 @@
+{
+  "executionRoleArn": null,
+  "containerDefinitions": [
+    {
+      "dnsSearchDomains": null,
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/db-task-def",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "entryPoint": null,
+      "portMappings": [],
+      "command": null,
+      "linuxParameters": null,
+      "cpu": 0,
+      "environment": [
+        {
+          "name": "POSTGRES_DB",
+          "value": "rsys_platform_businessintelligence_service"
+        },
+        {
+          "name": "POSTGRES_PASSWORD",
+          "value": "fy2Lkxw201sV"
+        },
+        {
+          "name": "POSTGRES_USER",
+          "value": "rsys"
+        }
+      ],
+      "ulimits": null,
+      "dnsServers": null,
+      "mountPoints": [
+        {
+          "readOnly": null,
+          "containerPath": "/var/lib/postgresql/data",
+          "sourceVolume": "Vol-Businessintelligence-Db"
+        }
+      ],
+      "workingDirectory": null,
+      "dockerSecurityOptions": null,
+      "memory": 500,
+      "memoryReservation": 300,
+      "volumesFrom": [],
+      "image": "postgres:9.4",
+      "disableNetworking": null,
+      "healthCheck": null,
+      "essential": true,
+      "links": null,
+      "hostname": null,
+      "extraHosts": null,
+      "user": null,
+      "readonlyRootFilesystem": null,
+      "dockerLabels": {
+        "com.rsys.service": "db-business-intelligence",
+        "com.rsys.service.type": "db"
+      },
+      "privileged": null,
+      "name": "business-intelligence-service-postgres-database"
+    },
+    {
+      "dnsSearchDomains": null,
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/db-task-def",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "entryPoint": null,
+      "portMappings": [],
+      "command": null,
+      "linuxParameters": null,
+      "cpu": 0,
+      "environment": [
+        {
+          "name": "POSTGRES_DB",
+          "value": "rsys_platform_core"
+        },
+        {
+          "name": "POSTGRES_PASSWORD",
+          "value": "fy2Lkxw201sV"
+        },
+        {
+          "name": "POSTGRES_USER",
+          "value": "rsys"
+        }
+      ],
+      "ulimits": null,
+      "dnsServers": null,
+      "mountPoints": [
+        {
+          "readOnly": null,
+          "containerPath": "/var/lib/postgresql/data",
+          "sourceVolume": "Vol-Core-Db"
+        }
+      ],
+      "workingDirectory": null,
+      "dockerSecurityOptions": null,
+      "memory": 500,
+      "memoryReservation": 300,
+      "volumesFrom": [],
+      "image": "postgres:9.4",
+      "disableNetworking": null,
+      "healthCheck": null,
+      "essential": true,
+      "links": null,
+      "hostname": null,
+      "extraHosts": null,
+      "user": null,
+      "readonlyRootFilesystem": null,
+      "dockerLabels": {
+        "com.rsys.service": "db-core",
+        "com.rsys.service.type": "db"
+      },
+      "privileged": null,
+      "name": "core-postgres-database"
+    },
+    {
+      "dnsSearchDomains": null,
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/db-task-def",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "entryPoint": null,
+      "portMappings": [
+        {
+          "hostPort": 5434,
+          "protocol": "tcp",
+          "containerPort": 5432
+        }
+      ],
+      "command": null,
+      "linuxParameters": null,
+      "cpu": 0,
+      "environment": [
+        {
+          "name": "POSTGRES_DB",
+          "value": "rsys_platform_web_content_service"
+        },
+        {
+          "name": "POSTGRES_PASSWORD",
+          "value": "fy2Lkxw201sV"
+        },
+        {
+          "name": "POSTGRES_USER",
+          "value": "rsys"
+        }
+      ],
+      "ulimits": null,
+      "dnsServers": null,
+      "mountPoints": [
+        {
+          "readOnly": null,
+          "containerPath": "/var/lib/postgresql/data",
+          "sourceVolume": "Vol-Web-Content-Db"
+        }
+      ],
+      "workingDirectory": null,
+      "dockerSecurityOptions": null,
+      "memory": 500,
+      "memoryReservation": 300,
+      "volumesFrom": [],
+      "image": "postgres:9.4",
+      "disableNetworking": null,
+      "healthCheck": null,
+      "essential": true,
+      "links": null,
+      "hostname": null,
+      "extraHosts": null,
+      "user": null,
+      "readonlyRootFilesystem": null,
+      "dockerLabels": {
+        "com.rsys.service": "db-web-content",
+        "com.rsys.service.type": "db"
+      },
+      "privileged": null,
+      "name": "web-content-service-postgres-database"
+    }
+  ],
+  "placementConstraints": [],
+  "memory": null,
+  "taskRoleArn": null,
+  "compatibilities": [
+    "EC2"
+  ],
+  "taskDefinitionArn": "arn:aws:ecs:us-east-1:910572024355:task-definition/db-task-def:1",
+  "family": "db-task-def",
+  "requiresAttributes": [
+    {
+      "targetId": null,
+      "targetType": null,
+      "value": null,
+      "name": "com.amazonaws.ecs.capability.docker-remote-api.1.18"
+    },
+    {
+      "targetId": null,
+      "targetType": null,
+      "value": null,
+      "name": "com.amazonaws.ecs.capability.logging-driver.awslogs"
+    },
+    {
+      "targetId": null,
+      "targetType": null,
+      "value": null,
+      "name": "com.amazonaws.ecs.capability.docker-remote-api.1.21"
+    },
+    {
+      "targetId": null,
+      "targetType": null,
+      "value": null,
+      "name": "com.amazonaws.ecs.capability.docker-remote-api.1.19"
+    }
+  ],
+  "requiresCompatibilities": [],
+  "networkMode": "bridge",
+  "cpu": null,
+  "revision": 1,
+  "status": "ACTIVE",
+  "volumes": [
+    {
+      "name": "Vol-Core-Db",
+      "host": {
+        "sourcePath": "vol-core-db"
+      }
+    },
+    {
+      "name": "Vol-Businessintelligence-Db",
+      "host": {
+        "sourcePath": "vol-businessintelligence-db"
+      }
+    },
+    {
+      "name": "Vol-Web-Content-Db",
+      "host": {
+        "sourcePath": "vol-web-content-db"
+      }
+    }
+  ]
+}

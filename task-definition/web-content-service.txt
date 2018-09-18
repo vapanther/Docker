@@ -1,0 +1,115 @@
+{
+  "executionRoleArn": "arn:aws:iam::910572024355:role/ecsTaskExecutionRole",
+  "containerDefinitions": [
+    {
+      "dnsSearchDomains": null,
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/web-content-service-task-def",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "entryPoint": [
+        "java",
+        "-Djava.security.egd=file:/dev/./urandom",
+        "-Dspring.profiles.active=docker",
+        "-Drsys.services.eureka.uri=Eureka-ELB-b6e47580a66e3700.elb.us-east-1.amazonaws.com"
+      ],
+      "portMappings": [],
+      "command": [
+        "-jar",
+        "/rsys-platform-web-content-service.jar"
+      ],
+      "linuxParameters": null,
+      "cpu": 0,
+      "environment": [],
+      "ulimits": null,
+      "dnsServers": null,
+      "mountPoints": [],
+      "workingDirectory": null,
+      "dockerSecurityOptions": null,
+      "memory": 512,
+      "memoryReservation": 300,
+      "volumesFrom": [],
+      "image": "demorsys/rsys-platform-web-content-service",
+      "disableNetworking": null,
+      "healthCheck": null,
+      "essential": true,
+      "links": null,
+      "hostname": null,
+      "extraHosts": [
+        {
+          "ipAddress": "54.175.117.8",
+          "hostname": "configuration"
+        },
+        {
+          "ipAddress": "54.175.117.8",
+          "hostname": "zipkin"
+        },
+        {
+          "ipAddress": "54.172.33.63",
+          "hostname": "rabbitmq"
+        },
+        {
+          "ipAddress": "54.172.33.63",
+          "hostname": "web-content-service-postgres-database"
+        }
+      ],
+      "user": null,
+      "readonlyRootFilesystem": null,
+      "dockerLabels": null,
+      "privileged": null,
+      "name": "web-content-service"
+    }
+  ],
+  "placementConstraints": [],
+  "memory": null,
+  "taskRoleArn": null,
+  "compatibilities": [
+    "EC2"
+  ],
+  "taskDefinitionArn": "arn:aws:ecs:us-east-1:910572024355:task-definition/web-content-service-task-def:1",
+  "family": "web-content-service-task-def",
+  "requiresAttributes": [
+    {
+      "targetId": null,
+      "targetType": null,
+      "value": null,
+      "name": "com.amazonaws.ecs.capability.docker-remote-api.1.17"
+    },
+    {
+      "targetId": null,
+      "targetType": null,
+      "value": null,
+      "name": "ecs.capability.execution-role-awslogs"
+    },
+    {
+      "targetId": null,
+      "targetType": null,
+      "value": null,
+      "name": "com.amazonaws.ecs.capability.logging-driver.awslogs"
+    },
+    {
+      "targetId": null,
+      "targetType": null,
+      "value": null,
+      "name": "com.amazonaws.ecs.capability.docker-remote-api.1.21"
+    },
+    {
+      "targetId": null,
+      "targetType": null,
+      "value": null,
+      "name": "com.amazonaws.ecs.capability.docker-remote-api.1.19"
+    }
+  ],
+  "requiresCompatibilities": [
+    "EC2"
+  ],
+  "networkMode": "bridge",
+  "cpu": null,
+  "revision": 1,
+  "status": "ACTIVE",
+  "volumes": []
+}
