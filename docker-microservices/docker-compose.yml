@@ -1,0 +1,295 @@
+version: '2'
+
+services:
+  # we need to have some image defined to limit repetition of logging parameters
+  # and 'hello-world' is one of the smallest
+  base:
+    image: hello-world
+    logging:
+      driver: gelf
+      options:
+        gelf-address: udp://localhost:12201
+    volumes:
+      - ./monitoring/jolokia-jvm-1.3.5-agent.jar:/jolokia-jvm-1.3.5-agent.jar:ro
+
+  redis:
+    image: redis:3.0
+    hostname: redis
+    extends:
+      service: base
+    labels:
+      com.rsys.service: "redis"
+      com.rsys.service.type: "utils"
+
+  rabbitmq:
+    image: rabbitmq:3.6.6-management
+    hostname: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    extends:
+      service: base
+    labels:
+      com.rsys.service: "rabbitmq"
+      com.rsys.service.type: "utils"
+
+  discovery:
+    image: demorsys/rsys-platform-eureka:2.0-SNAPSHOT
+    command: -javaagent:/jolokia-jvm-1.3.5-agent.jar=port=7777,host=0.0.0.0,discoveryEnabled=false -Xmx512m -jar /rsys-platform-eureka.jar
+    ports:
+      - "8761:8761"
+    extends:
+      service: base
+    labels:
+      com.rsys.service: "eureka"
+      com.rsys.service.type: "utils"
+
+  configuration:
+    image: demorsys/rsys-platform-configuration:2.0-SNAPSHOT
+    command: -javaagent:/jolokia-jvm-1.3.5-agent.jar=port=7777,host=0.0.0.0,discoveryEnabled=false -Xmx512m -jar /rsys-platform-configuration.jar
+    depends_on:
+      - discovery
+    extends:
+      service: base
+    labels:
+      com.rsys.service: "configuration"
+      com.rsys.service.type: "rsys"
+
+  gateway:
+    image: demorsys/rsys-platform-gateway
+    command: -javaagent:/jolokia-jvm-1.3.5-agent.jar=port=7777,host=0.0.0.0,discoveryEnabled=false -Xmx512m -jar /rsys-platform-gateway.jar
+    depends_on:
+      - discovery
+      - configuration
+      - redis
+      - core
+      - business-intelligence-service
+      - web-content-service
+      - zipkin
+    extends:
+      service: base
+    labels:
+      com.rsys.service: "gateway"
+      com.rsys.service.type: "rsys"
+
+  business-intelligence-service:
+    image: demorsys/rsys-platform-business-intelligence-service:2.0-SNAPSHOT
+    command: -javaagent:/jolokia-jvm-1.3.5-agent.jar=port=7777,host=0.0.0.0,discoveryEnabled=false -Xmx512m -jar /rsys-platform-business-intelligence-service.jar
+    depends_on:
+      - discovery
+      - configuration
+      - business-intelligence-service-postgres-database
+      - rabbitmq
+      - zipkin
+    extends:
+      service: base
+    labels:
+      com.rsys.service: "business-intelligence"
+      com.rsys.service.type: "rsys"
+
+  web-content-service:
+    image: demorsys/rsys-platform-web-content-service:2.0-SNAPSHOT
+    command: -javaagent:/jolokia-jvm-1.3.5-agent.jar=port=7777,host=0.0.0.0,discoveryEnabled=false -Xmx1024m -jar /rsys-platform-web-content-service.jar
+    depends_on:
+      - discovery
+      - configuration
+      - web-content-service-postgres-database
+      - rabbitmq
+      - zipkin
+    extends:
+      service: base
+    labels:
+      com.rsys.service: "web-content"
+      com.rsys.service.type: "rsys"
+
+  core:
+    image: demorsys/rsys-platform-core:2.0-SNAPSHOT
+    command: -javaagent:/jolokia-jvm-1.3.5-agent.jar=port=7777,host=0.0.0.0,discoveryEnabled=false -Xmx1024m -jar /rsys-platform-core.jar
+    depends_on:
+      - discovery
+      - configuration
+      - redis
+      - core-postgres-database
+      - rabbitmq
+      - zipkin
+    volumes:
+      - ../data/image-library:/data/image-library
+    extends:
+      service: base
+    labels:
+      com.rsys.service: "core"
+      com.rsys.service.type: "rsys"
+
+  web-client:
+    image: demorsys/rsys-platform-web-client:1.0-SNAPSHOT
+    command: -javaagent:/jolokia-jvm-1.3.5-agent.jar=port=7777,host=0.0.0.0,discoveryEnabled=false -Xmx512m -jar /app.war
+    ports:
+      - "9994:8080"
+    depends_on:
+     - discovery
+     - configuration
+     - gateway
+     - core
+     - zipkin
+    extends:
+      service: base
+    labels:
+      traefik.port: "8080"
+      traefik.frontend.rule: "Host:local.platform.rsys.com"
+      traefik.backend.loadbalancer.sticky: "true"
+      com.rsys.service: "web-client"
+      com.rsys.service.type: "rsys"
+
+  hystrix-dashboard:
+    image: demorsys/rsys-platform-hystrix-dashboard:2.0-SNAPSHOT
+    command: -javaagent:/jolokia-jvm-1.3.5-agent.jar=port=7777,host=0.0.0.0,discoveryEnabled=false -Xmx512m -jar /rsys-platform-hystrix-dashboard.jar
+    ports:
+      - "8989:8989"
+    depends_on:
+     - gateway
+     - core
+     - business-intelligence-service
+     - web-content-service
+    extends:
+      service: base
+    labels:
+      com.rsys.service: "hystrix-dashboard"
+      com.rsys.service.type: "rsys"
+
+  zipkin:
+    image: demorsys/rsys-platform-zipkin:2.0-SNAPSHOT
+    command: -javaagent:/jolokia-jvm-1.3.5-agent.jar=port=7777,host=0.0.0.0,discoveryEnabled=false -Xmx512m -jar /rsys-platform-zipkin.jar
+    ports:
+      - "9411:9411"
+    depends_on:
+     - rabbitmq
+     - configuration
+    extends:
+      service: base
+    labels:
+      com.rsys.service: "zipkin"
+      com.rsys.service.type: "rsys"
+
+  zipkin-web:
+    image: demorsys/zipkin-web
+    build: ../zipkin-web
+    ports:
+      - "9412:9412"
+    depends_on:
+     - zipkin
+    extends:
+      service: base
+    labels:
+      com.rsys.service: "zipkin-web"
+      com.rsys.service.type: "rsys"
+
+  load-balancer:
+    image: traefik:v1.1.2-alpine
+    command: --web --docker --docker.domain=devd.io --logLevel=DEBUG
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /dev/null:/traefik.toml
+    depends_on:
+      - web-client
+    extends:
+      service: base
+    labels:
+      com.rsys.service: "loadbalancer"
+      com.rsys.service.type: "utils"
+
+  core-postgres-database:
+    image: postgres:9.4
+    environment:
+      POSTGRES_PASSWORD: fy2Lkxw201sV
+      POSTGRES_USER: rsys
+      POSTGRES_DB: rsys_platform_core
+    volumes:
+      - vol-core-db:/var/lib/postgresql/data
+    extends:
+      service: base
+    labels:
+      com.rsys.service: "db-core"
+      com.rsys.service.type: "db"
+
+  business-intelligence-service-postgres-database:
+    image: postgres:9.4
+    environment:
+      POSTGRES_PASSWORD: fy2Lkxw201sV
+      POSTGRES_USER: rsys
+      POSTGRES_DB: rsys_platform_businessintelligence_service
+    volumes:
+      - vol-businessintelligence-db:/var/lib/postgresql/data
+    extends:
+      service: base
+    labels:
+      com.rsys.service: "db-business-intelligence"
+      com.rsys.service.type: "db"
+
+  web-content-service-postgres-database:
+    image: postgres:9.4
+    ports:
+      - "5434:5432"
+    environment:
+      POSTGRES_PASSWORD: fy2Lkxw201sV
+      POSTGRES_USER: rsys
+      POSTGRES_DB: rsys_platform_web_content_service
+    volumes:
+      - vol-web-content-db:/var/lib/postgresql/data
+    extends:
+      service: base
+    labels:
+      com.rsys.service: "db-web-content"
+      com.rsys.service.type: "db"
+
+# Logging components
+
+  elasticsearch:
+    image: elasticsearch:5.2-alpine
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    environment:
+      ES_JAVA_OPTS: "-Xms512m -Xmx512m"
+    labels:
+      com.rsys.service: "elasticsearch"
+      com.rsys.service.type: "logging"
+
+  logstash:
+    image: logstash:5.2-alpine
+    command: logstash -f /logging/logstash.conf 
+    # uncomment to enable output of all incoming messages to stdout of logstash container
+    # command: logstash -e 'input { gelf { } } filter { } output { elasticsearch { hosts => "elasticsearch:9200" } stdout { codec => rubydebug } }'
+
+    ports:
+      - "12201:12201/udp"
+      - "4260:4260/tcp"
+    volumes:
+      - ./logging/:/logging/
+    depends_on:
+      - elasticsearch
+    labels:
+      com.rsys.service: "logstash"
+      com.rsys.service.type: "logging"
+
+  kibana:
+    image: kibana:5.2
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+    environment:
+      ELASTICSEARCH_URL: "http://elasticsearch:9200"
+    labels:
+      com.rsys.service: "kibana"
+      com.rsys.service.type: "logging"
+
+networks:
+  default:
+
+volumes:
+  vol-web-content-db:
+  vol-businessintelligence-db:
+  vol-core-db:

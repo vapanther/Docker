@@ -1,0 +1,5 @@
+FROM  Openjdk
+
+ADD  WebDeploy_amd64_en-US.msi /WebDeploy_amd64_en-US.msi
+
+RUN msiexec /i   D:\WebDeploy_amd64_en-US.msi /qn
